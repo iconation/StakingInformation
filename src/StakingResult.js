@@ -26,19 +26,27 @@ const StakingResult = ({ match }) => {
 
     const getInformation = () => {
 
+        setStakeAmount(0)
+        setUnstakeAmount(null)
+        setUnstakeBlockHeight(null)
+        setUnstakeTimeRemaining(null)
+        setBlockHeight(null)
+        setTotalDelegated(0)
+        setVotingPower(0)
         setPreps(null)
         setDelegations(null)
+        setReady(null)
+        setIscoreICX(null)
+        setIscoreBlockHeight(null)
+        setIscoreTimeDiff(null)
 
         const httpProvider = new HttpProvider('https://ctz.solidwallet.io/api/v3')
         const iconService = new IconService(httpProvider)
 
         getStake(address).then(async result => {
-            if (result['stake']) {
-                setStakeAmount(loop2icx(result['stake']))
-            }
-            if (result['unstake']) {
-                setUnstakeAmount(loop2icx(result['unstake']))
-            }
+            result['stake'] && setStakeAmount(loop2icx(result['stake']))
+            result['unstake'] && setUnstakeAmount(loop2icx(result['unstake']))
+
             if (result['unstakeBlockHeight']) {
                 const latest = await iconService.getBlock("latest").execute();
                 const targetBH = parseInt(result['unstakeBlockHeight'], 16)
@@ -48,6 +56,7 @@ const StakingResult = ({ match }) => {
                 setUnstakeBlockHeight(targetBH)
                 setUnstakeTimeRemaining(diffHours)
             }
+
             if (result['blockHeight']) {
                 const bh = parseInt(result['blockHeight'], 16)
                 setBlockHeight(bh)
