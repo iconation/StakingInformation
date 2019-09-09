@@ -102,3 +102,41 @@ export async function getPRep(address) {
             })
     });
 }
+
+export async function queryIScore(address) {
+    const walletApi = await walletApiInstance()
+    return new Promise(resolve => {
+        const param = {
+            jsonrpc: "2.0",
+            id: 1234,
+            method: "icx_call",
+            params: {
+                "from": "hx0000000000000000000000000000000000000000",
+                "to": "cx0000000000000000000000000000000000000000",
+                "dataType": "call",
+                "data": {
+                    "method": "queryIScore",
+                    "params": {
+                        address
+                    }
+                }
+            }
+        }
+        walletApi.post(`/api/v3`, JSON.stringify(param))
+            .then(response => {
+                resolve(response.data.result);
+            })
+            .catch(error => {
+                if (!!error.response) {
+                    resolve(error.response.data);
+                }
+                else {
+                    resolve({
+                        error: {
+                            message: error.message
+                        }
+                    })
+                }
+            })
+    });
+}
