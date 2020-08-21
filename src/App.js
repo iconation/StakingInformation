@@ -7,8 +7,9 @@ import StakingResult from './StakingResult'
 import { Redirect } from 'react-router-dom'
 
 const App = () => {
-  const [address, setAddress] = useState('')
-  const [clicked, setClicked] = useState(false)
+    const urlAddress = window.location.href.split('/').pop()
+    const [address, setAddress] = useState(urlAddress)
+    const [clicked, setClicked] = useState(false)
 
   return (
     <div className="App">
