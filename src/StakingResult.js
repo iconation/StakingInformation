@@ -41,20 +41,22 @@ const StakingResult = ({ match }) => {
 
         getStake(address).then(async result => {
             result['stake'] && setStakeAmount(loop2icx(result['stake']))
-            if (result['unstakes']){
+
+            if (result['unstakes']) {
                 let unstakes = []
-                result['unstakes'].forEach(unstake =>{
+                result['unstakes'].forEach(unstake => {
                     const targetBH = parseInt(unstake.unstakeBlockHeight, 16)
                     const diffSeconds = unstake.remainingBlocks * 2
                     const diffHours = (diffSeconds / 3600.0).toFixed(2)
                     unstakes.push({
-                        amount : loop2icx(unstake.unstake),
+                        amount: loop2icx(unstake.unstake),
                         blockHeight: targetBH,
                         timeRemainingInHrs: diffHours
                     })
                 })
                 setUnstakeRequests(unstakes)
             }
+
             if (result['blockHeight']) {
                 const bh = parseInt(result['blockHeight'], 16)
                 setBlockHeight(bh)
