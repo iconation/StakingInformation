@@ -98,7 +98,37 @@ const StakingResult = ({ match }) => {
                 :
                 <>
                     {stakeAmount === 0 ?
-                        <div className="title">This address hasn't staked any ICX.</div>
+                        <div>
+                            <div className="title">This address is not currently staking any ICX.</div>
+                            {unstakeRequests &&
+                            <div>
+                                <br />
+                                <div className="title">Unstaking Information</div>
+                                <br />
+                                <table className="table unstake">
+                                    <thead>
+                                    <tr className="dark">
+                                        <td>Unstake Amount</td>
+                                        <td>Unstake Block Height</td>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    {unstakeRequests.map((unstake, index) => {
+                                        return (
+                                            <tr key={index}>
+                                                {unstake.amount && <td>{unstake.amount} ICX</td>}
+                                                {unstake.blockHeight &&
+                                                <td>{unstake.blockHeight} ({unstake.timeRemainingInHrs} hours
+                                                    or {(unstake.timeRemainingInHrs / 24).toFixed(2)} days)</td>}
+                                            </tr>
+                                        )
+                                    })
+                                    }
+                                    </tbody>
+                                </table>
+                            </div>
+                            }
+                        </div>
                         :
                         <>
                             <br />
