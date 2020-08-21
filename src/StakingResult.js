@@ -7,9 +7,7 @@ const StakingResult = ({ match }) => {
     const address = 'hx' + match.params.address
 
     const [stakeAmount, setStakeAmount] = useState(0)
-    const [unstakeAmount, setUnstakeAmount] = useState(null)
-    const [unstakeBlockHeight, setUnstakeBlockHeight] = useState(null)
-    const [unstakeTimeRemaining, setUnstakeTimeRemaining] = useState(null)
+    const [unstakeRequests, setUnstakeRequests] = useState(null)
     const [blockHeight, setBlockHeight] = useState(null)
     const [totalDelegated, setTotalDelegated] = useState(0)
     const [votingPower, setVotingPower] = useState(0)
@@ -27,9 +25,7 @@ const StakingResult = ({ match }) => {
     const getInformation = () => {
 
         setStakeAmount(0)
-        setUnstakeAmount(null)
-        setUnstakeBlockHeight(null)
-        setUnstakeTimeRemaining(null)
+        setUnstakeRequests(null)
         setBlockHeight(null)
         setTotalDelegated(0)
         setVotingPower(0)
@@ -45,18 +41,20 @@ const StakingResult = ({ match }) => {
 
         getStake(address).then(async result => {
             result['stake'] && setStakeAmount(loop2icx(result['stake']))
-            result['unstake'] && setUnstakeAmount(loop2icx(result['unstake']))
-
-            if (result['unstakeBlockHeight']) {
-                const latest = await iconService.getBlock("latest").execute();
-                const targetBH = parseInt(result['unstakeBlockHeight'], 16)
-                const diffBlocks = targetBH - latest['height']
-                const diffSeconds = diffBlocks * 2
-                const diffHours = (diffSeconds / 3600.0).toFixed(2)
-                setUnstakeBlockHeight(targetBH)
-                setUnstakeTimeRemaining(diffHours)
+            if (result['unstakes']){
+                let unstakes = []
+                result['unstakes'].forEach(unstake =>{
+                    const targetBH = parseInt(unstake.unstakeBlockHeight, 16)
+                    const diffSeconds = unstake.remainingBlocks * 2
+                    const diffHours = (diffSeconds / 3600.0).toFixed(2)
+                    unstakes.push({
+                        amount : loop2icx(unstake.unstake),
+                        blockHeight: targetBH,
+                        timeRemainingInHrs: diffHours
+                    })
+                })
+                setUnstakeRequests(unstakes)
             }
-
             if (result['blockHeight']) {
                 const bh = parseInt(result['blockHeight'], 16)
                 setBlockHeight(bh)
@@ -108,20 +106,40 @@ const StakingResult = ({ match }) => {
                                 <thead>
                                     <tr className="dark">
                                         {stakeAmount && <td>Stake Amount</td>}
-                                        {unstakeAmount && <td>Unstake Amount</td>}
                                         {blockHeight && <td>Stake Block Height</td>}
-                                        {unstakeBlockHeight && <td>Unstake Block Height</td>}
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <tr>
                                         {stakeAmount && <td>{stakeAmount} ICX</td>}
-                                        {unstakeAmount && <td>{unstakeAmount} ICX</td>}
-                                        {unstakeBlockHeight && <td>{unstakeBlockHeight} ({unstakeTimeRemaining} hours or {(unstakeTimeRemaining / 24).toFixed(2)} days)</td>}
                                         {blockHeight && <td>{blockHeight}</td>}
                                     </tr>
                                 </tbody>
                             </table>
+
+                            {unstakeRequests &&
+                            <table className="table">
+                                <thead>
+                                <tr className="dark">
+                                    <td>Unstake Amount</td>
+                                    <td>Unstake Block Height</td>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {unstakeRequests.map((unstake, index) => {
+                                    return (
+                                        <tr key={index}>
+                                            {unstake.amount && <td>{unstake.amount} ICX</td>}
+                                            {unstake.blockHeight &&
+                                            <td>{unstake.blockHeight} ({unstake.timeRemainingInHrs} hours
+                                                or {(unstake.timeRemainingInHrs / 24).toFixed(2)} days)</td>}
+                                        </tr>
+                                    )
+                                })
+                                }
+                                </tbody>
+                            </table>
+                            }
 
                             {preps && delegations && preps.length !== 0 && delegations.length !== 0 &&
                                 <>
@@ -130,8 +148,8 @@ const StakingResult = ({ match }) => {
                                     <table className="table">
                                         <thead>
                                             <tr>
-                                                <td className="dark">Total delegated</td>
-                                                <td className="dark">Voting Power</td>
+                                                <td className="dark">Delegated Voting Power</td>
+                                                <td className="dark">Undelegated Voting Power</td>
                                             </tr>
                                         </thead>
                                         <tbody>
